@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏠 الرئيسية — نظام المسارات</title>
+  <style>
+    /* ============================================================
+       الأنماط المشتركة للصفحة الرئيسية (مختصرة)
+       ============================================================ */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg-primary: #0b0e1a;
+      --bg-surface: #131a2b;
+      --bg-surface-2: #1a2338;
+      --bg-surface-3: #263447;
+      --border-color: #28324b;
+      --text-primary: #e8edf5;
+      --text-secondary: #a0b3cf;
+      --text-muted: #6b7d9c;
+      --gold: #d4af37;
+      --gold-dark: #b8942b;
+      --gold-glow: rgba(212,175,55,0.25);
+      --success: #4cd964;
+      --danger: #ff6b6b;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.5);
+      --transition: all 0.25s ease;
+    }
+    body { font-family: 'Segoe UI',system-ui,sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; padding:16px; }
+    .app-shell { max-width:1300px; margin:0 auto; background:linear-gradient(145deg,var(--bg-surface),#0d1322); border-radius:48px; padding:28px 32px 40px; box-shadow:0 30px 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,215,0,0.06); min-height:90vh; }
+    .navbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:30px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .navbar .brand { display:flex; align-items:center; gap:12px; }
+    .navbar .brand .icon { width:44px; height:44px; background:radial-gradient(circle at 30% 30%,#f7d875,var(--gold-dark)); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 6px 16px var(--gold-glow); }
+    .navbar .brand .name { font-size:24px; font-weight:700; background:linear-gradient(135deg,#f6e6b0,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .navbar .brand .name span { font-weight:300; -webkit-text-fill-color:var(--text-secondary); color:var(--text-secondary); }
+    .nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+    .nav-links .nav-btn { padding:8px 22px; border-radius:40px; font-size:15px; font-weight:500; background:transparent; color:var(--text-secondary); border:1px solid transparent; transition:var(--transition); text-decoration:none; display:inline-block; }
+    .nav-links .nav-btn:hover { color:var(--text-primary); background:rgba(255,255,255,0.04); }
+    .nav-links .nav-btn.active { background:rgba(212,175,55,0.12); border-color:rgba(212,175,55,0.3); color:var(--gold); }
+    .hero-section { text-align:center; padding:50px 20px 30px; }
+    .hero-section .big-icon { font-size:80px; margin-bottom:16px; }
+    .hero-section h1 { font-size:2.6rem; font-weight:700; background:linear-gradient(135deg,#f6e6b0,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .hero-section p { color:var(--text-secondary); font-size:1.15rem; max-width:600px; margin:12px auto 30px; line-height:1.8; }
+    .home-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px; margin-top:30px; }
+    .home-card { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); border-radius:var(--radius); padding:30px 22px; text-align:center; transition:var(--transition); cursor:pointer; text-decoration:none; display:block; color:inherit; }
+    .home-card:hover { background:rgba(255,255,255,0.05); border-color:rgba(212,175,55,0.2); transform:translateY(-4px); box-shadow:var(--shadow); }
+    .home-card .h-icon { font-size:40px; margin-bottom:12px; display:block; }
+    .home-card h3 { font-size:1.2rem; color:var(--gold); margin-bottom:6px; }
+    .home-card p { color:var(--text-muted); font-size:0.95rem; }
+    @media (max-width:760px) { .navbar { flex-direction:column; align-items:stretch; } .nav-links { justify-content:center; } .hero-section h1 { font-size:2rem; } .app-shell { border-radius:28px; padding:16px 12px 24px; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="navbar">
+      <div class="brand">
+        <div class="icon">✈️</div>
+        <div class="name">Route<span>Optimizer</span></div>
+      </div>
+      <div class="nav-links">
+        <a class="nav-btn active" href="index.html">🏠 الرئيسية</a>
+        <a class="nav-btn" href="airport.html">🛫 بحث المطارات</a>
+        <a class="nav-btn" href="route.html">🛬 المسارات</a>
+      </div>
+    </nav>
+    <div class="hero-section">
+      <div class="big-icon">🌍</div>
+      <h1>نظام تحسين مسارات الرحلات</h1>
+      <p>منصة متكاملة للبحث عن المطارات واستكشاف أفضل المسارات الجوية بين أي وجهتين حول العالم.</p>
+      <div class="home-grid">
+        <a class="home-card" href="airport.html">
+          <span class="h-icon">🛫</span>
+          <h3>بحث المطارات</h3>
+          <p>ابحث عن المطارات بالاسم، المدينة، الدولة، أو كود IATA/ICAO مع اقتراحات ذكية.</p>
+        </a>
+        <a class="home-card" href="route.html">
+          <span class="h-icon">🛬</span>
+          <h3>المسارات الجوية</h3>
+          <p>اكتشف أفضل المسارات بين مطارين مع خيارات التوقفات والتفضيلات المتعددة.</p>
+        </a>
+        <div class="home-card" style="opacity:0.6;cursor:default;">
+          <span class="h-icon">📊</span>
+          <h3>إحصائيات آنية</h3>
+          <p>عرض بيانات المطارات والمسارات وشركات الطيران في الوقت الفعلي.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

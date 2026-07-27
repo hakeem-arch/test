@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛬 المسارات الجوية</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="navbar">
+      <div class="brand">
+        <div class="icon">✈️</div>
+        <div class="name">Route<span>Optimizer</span></div>
+      </div>
+      <div class="nav-links">
+        <a class="nav-btn" href="index.html">🏠 الرئيسية</a>
+        <a class="nav-btn" href="airport.html">🛫 بحث المطارات</a>
+        <a class="nav-btn active" href="route.html">🛬 المسارات</a>
+      </div>
+    </nav>
+
+    <div class="route-search-wrap">
+      <!-- شريط إعدادات السيرفرين -->
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:center;background:rgba(255,255,255,0.02);padding:12px 18px;border-radius:60px;border:1px solid rgba(255,255,255,0.04);">
+        <label style="color:var(--text-muted);font-size:13px;font-weight:500;">🔍 IATA API:</label>
+        <input type="text" id="routeIataApiBase" value="http://100.102.254.2:8000" style="flex:1;min-width:150px;direction:ltr;background:var(--bg-surface-2);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);padding:6px 12px;font-size:0.85rem;font-family:monospace;" />
+        <label style="color:var(--text-muted);font-size:13px;font-weight:500;">🛫 Routes API:</label>
+        <input type="text" id="routeRouteApiBase" value="http://localhost:8000" style="flex:1;min-width:150px;direction:ltr;background:var(--bg-surface-2);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);padding:6px 12px;font-size:0.85rem;font-family:monospace;" />
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar" id="routeStats">
+        <div class="stat-item"><strong id="rStatAirports">—</strong><span class="label">مطار</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><strong id="rStatRoutes">—</strong><span class="label">مسار</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><strong id="rStatAirlines">—</strong><span class="label">شركة طيران</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span style="color:var(--text-muted);">⏱️ <span id="rStatBuild">—</span> ms</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span style="color:var(--text-muted);" id="rStatStatus">🟢 جاهز</span></div>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="step-indicator" id="stepIndicator">
+        <div class="step-badge active" id="step1Badge">
+          <span class="num">1</span><span>إدخال المطارات</span><span class="check">✔️</span>
+        </div>
+        <span class="step-arrow">→</span>
+        <div class="step-badge" id="step2Badge">
+          <span class="num">2</span><span>اختيار التفضيلات</span><span class="check">✔️</span>
+        </div>
+        <div class="step-status" id="stepStatus"><span class="highlight">⏳</span> انتظر جلب أكواد IATA…</div>
+      </div>
+
+      <!-- Search panel -->
+      <div class="search-panel">
+        <div class="search-grid">
+          <div class="field-group">
+            <label>✈️ من (اسم المطار أو المدينة)</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="rFromInput" placeholder="مثال: دبي أو DXB" style="flex:1;" />
+              <button class="btn-fetch-iata" id="rFetchFrom">🔍 IATA</button>
+            </div>
+            <span class="iata-badge" id="rFromIata">⏳ انتظر …</span>
+          </div>
+          <div class="field-group">
+            <label>📍 إلى (اسم المطار أو المدينة)</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="rToInput" placeholder="مثال: لندن أو LHR" style="flex:1;" />
+              <button class="btn-fetch-iata" id="rFetchTo">🔍 IATA</button>
+            </div>
+            <span class="iata-badge" id="rToIata">⏳ انتظر …</span>
+          </div>
+          <div class="field-group">
+            <label>⚙️ التفضيل</label>
+            <select id="rPrefSelect">
+              <option value="balanced">متوازن</option>
+              <option value="fastest">الأسرع</option>
+              <option value="shortest">أقل مسافة</option>
+              <option value="cheapest">الأرخص</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>🔄 التوقف</label>
+            <select id="rStopsSelect">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div class="field-group" style="justify-content:flex-end;">
+            <button class="btn-search" id="rSearchBtn" disabled>🔍 بحث</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-header">
+        <h2>🛬 <strong>أفضل المسارات</strong></h2>
+        <span class="meta" id="rResultsMeta">0 مسار</span>
+      </div>
+      <div id="rRoutesContainer">
+        <div class="empty-state">
+          <div class="emoji">🗺️</div>
+          <h3>أدخل مطارين واختر التفضيلات</h3>
+          <p>الخطوة 1: اكتب اسم المطار أو المدينة واضغط 🔍 IATA للحصول على الكود</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+      function $(id) { return document.getElementById(id); }
+      function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
+      function pick(obj, keys) { for(var i=0;i<keys.length;i++){ var v=obj[keys[i]]; if(v!==undefined && v!==null && v!=='') return v; } return ''; }
+
+      // عناصر واجهة المسارات
+      var rFromInput = $('rFromInput');
+      var rToInput = $('rToInput');
+      var rFromIata = $('rFromIata');
+      var rToIata = $('rToIata');
+      var rFetchFrom = $('rFetchFrom');
+      var rFetchTo = $('rFetchTo');
+      var rPrefSelect = $('rPrefSelect');
+      var rStopsSelect = $('rStopsSelect');
+      var rSearchBtn = $('rSearchBtn');
+      var rRoutesContainer = $('rRoutesContainer');
+      var rResultsMeta = $('rResultsMeta');
+      var rStatAirports = $('rStatAirports');
+      var rStatRoutes = $('rStatRoutes');
+      var rStatAirlines = $('rStatAirlines');
+      var rStatBuild = $('rStatBuild');
+      var rStatStatus = $('rStatStatus');
+      var step1Badge = $('step1Badge');
+      var step2Badge = $('step2Badge');
+      var stepStatus = $('stepStatus');
+
+      // حقول عناوين السيرفرات في الصفحة
+      var routeIataApiBase = $('routeIataApiBase');
+      var routeRouteApiBase = $('routeRouteApiBase');
+
+      // دوال لجلب العناوين
+      function getIataBase() { return routeIataApiBase.value.trim().replace(/\/+$/,''); }
+      function getRouteBase() { return routeRouteApiBase.value.trim().replace(/\/+$/,''); }
+
+      // حالة الأكواد
+      var fromIataCode = '', toIataCode = '';
+      var isFromFetched = false, isToFetched = false;
+
+      // تحديث واجهة الخطوات
+      function updateStepUI() {
+        var step1Done = isFromFetched && isToFetched;
+        step1Badge.classList.toggle('active', !step1Done);
+        step1Badge.classList.toggle('done', step1Done);
+        step2Badge.classList.toggle('active', step1Done);
+        step2Badge.classList.toggle('done', false);
+        if (step1Done) {
+          stepStatus.innerHTML = '✅ <span class="highlight">الخطوة 1 مكتملة</span> — اختر التفضيلات واضغط بحث';
+          rSearchBtn.disabled = false;
+        } else {
+          var msg = '';
+          if (!isFromFetched && !isToFetched) msg = '⏳ انتظر جلب كود IATA لكل من المطارين…';
+          else if (!isFromFetched) msg = '⏳ جارٍ جلب كود IATA لـ "من"…';
+          else if (!isToFetched) msg = '⏳ جارٍ جلب كود IATA لـ "إلى"…';
+          stepStatus.innerHTML = '<span class="highlight">⏳</span> ' + msg;
+          rSearchBtn.disabled = true;
+        }
+      }
+
+      function setIataBadge(el, code, ok) {
+        el.textContent = code || (ok ? '✅ تم' : '⏳ انتظر …');
+        el.className = 'iata-badge';
+        if (ok && code) el.classList.add('found');
+        else if (ok && !code) el.classList.add('error');
+      }
+
+      // جلب كود IATA من السيرفر الأول (IATA API)
+      async function fetchIata(query, field) {
+        if (!query || query.length < 2) {
+          if (field === 'from') { setIataBadge(rFromIata, '', false); isFromFetched = false; fromIataCode = ''; }
+          else { setIataBadge(rToIata, '', false); isToFetched = false; toIataCode = ''; }
+          updateStepUI();
+          return;
+        }
+        var badge = field === 'from' ? rFromIata : rToIata;
+        setIataBadge(badge, '⏳ جارٍ البحث…', false);
+        try {
+          var url = getIataBase() + '/api/v1/search-smart?query=' + encodeURIComponent(query);
+          var resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          var data = await resp.json();
+          var items = flattenAirports(data);
+          if (!items || !items.length) {
+            setIataBadge(badge, '❌ غير موجود', false);
+            if (field === 'from') { isFromFetched = false; fromIataCode = ''; } else { isToFetched = false; toIataCode = ''; }
+            updateStepUI();
+            return;
+          }
+          var found = null;
+          for (var i = 0; i < items.length; i++) {
+            var code = pick(items[i], ['iata', 'iata_code', 'code']);
+            if (code) { found = code; break; }
+          }
+          if (!found) found = pick(items[0], ['iata', 'iata_code', 'code']) || '❌';
+          if (field === 'from') { fromIataCode = found; isFromFetched = true; setIataBadge(rFromIata, found, true); }
+          else { toIataCode = found; isToFetched = true; setIataBadge(rToIata, found, true); }
+          updateStepUI();
+        } catch (err) {
+          console.warn('Fetch IATA error:', err);
+          setIataBadge(badge, '⚠️ خطأ', false);
+          if (field === 'from') { isFromFetched = false; fromIataCode = ''; } else { isToFetched = false; toIataCode = ''; }
+          updateStepUI();
+        }
+      }
+
+      function flattenAirports(data) {
+        var d = data.data || data.results || data;
+        if (Array.isArray(d)) return d;
+        if (!d || typeof d !== 'object') return [];
+        var out = [];
+        var ctx = { city: d.city, city_ar: d.city_ar, country: d.country, country_ar: d.country_ar };
+        if (Array.isArray(d.airports)) {
+          d.airports.forEach(function(a) { out.push(Object.assign({}, ctx, a)); });
+        }
+        if (Array.isArray(d.cities)) {
+          d.cities.forEach(function(c) {
+            (c.airports || []).forEach(function(a) {
+              out.push(Object.assign({}, { country: d.country, country_ar: d.country_ar, city: c.city, city_ar: c.city_ar }, a));
+            });
+          });
+        }
+        return out;
+      }
+
+      // أحداث جلب الأكواد
+      rFetchFrom.addEventListener('click', function() { fetchIata(rFromInput.value.trim(), 'from'); });
+      rFromInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); fetchIata(rFromInput.value.trim(), 'from'); } });
+      rFetchTo.addEventListener('click', function() { fetchIata(rToInput.value.trim(), 'to'); });
+      rToInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); fetchIata(rToInput.value.trim(), 'to'); } });
+      rFromInput.addEventListener('blur', function() { var v = rFromInput.value.trim(); if (v && !isFromFetched) fetchIata(v, 'from'); });
+      rToInput.addEventListener('blur', function() { var v = rToInput.value.trim(); if (v && !isToFetched) fetchIata(v, 'to'); });
+
+      // جلب الإحصائيات (من السيرفر الثاني)
+      async function loadRouteStats() {
+        try {
+          var r = await fetch(getRouteBase() + '/stats', { signal: AbortSignal.timeout(4000) });
+          if (!r.ok) throw new Error();
+          var data = await r.json();
+          rStatAirports.textContent = data.airports_in_graph ?? '—';
+          rStatRoutes.textContent = data.total_flight_edges ?? '—';
+          rStatAirlines.textContent = data.airlines_known ?? '—';
+          rStatBuild.textContent = data.build_time_ms ?? '—';
+          rStatStatus.textContent = '🟢 متصل';
+        } catch (_) { rStatStatus.textContent = '⚠️ غير متصل'; }
+      }
+      loadRouteStats();
+      setInterval(loadRouteStats, 30000);
+
+      // البحث عن المسارات (يستخدم السيرفر الثاني)
+      rSearchBtn.addEventListener('click', performRouteSearch);
+
+      async function performRouteSearch() {
+        if (!isFromFetched || !isToFetched || !fromIataCode || !toIataCode) {
+          rRoutesContainer.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><h3>أكمل الخطوة 1 أولاً</h3><p>تأكد من جلب كود IATA لكل من المطارين</p></div>';
+          return;
+        }
+        var from = fromIataCode.toUpperCase();
+        var to = toIataCode.toUpperCase();
+        var pref = rPrefSelect.value;
+        var stops = parseInt(rStopsSelect.value, 10);
+
+        rSearchBtn.textContent = '⏳ جارٍ البحث…';
+        rSearchBtn.disabled = true;
+        rRoutesContainer.innerHTML = '<div class="empty-state"><div class="emoji">⏳</div><h3>جارٍ البحث عن المسارات…</h3></div>';
+
+        try {
+          var params = new URLSearchParams({ from: from, to: to, preference: pref, max_stops: stops, top_k: 10 });
+          // استخدام السيرفر الثاني (Routes API)
+          var url = getRouteBase() + '/search?' + params.toString();
+          console.log('🔍 Route search URL:', url);
+          var resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+          if (!resp.ok) { var errText = await resp.text(); throw new Error('[' + resp.status + '] ' + errText); }
+          var data = await resp.json();
+          console.log('📦 Route data:', data);
+          rResultsMeta.textContent = (data.routes?.length ?? 0) + ' مسار';
+          renderRoutes(data);
+        } catch (err) {
+          console.error('❌ Route search error:', err);
+          rRoutesContainer.innerHTML = '<div class="empty-state"><div class="emoji">⚠️</div><h3>حدث خطأ</h3><p>' + escapeHtml(err.message || 'تعذر الاتصال بالخادم') + '</p></div>' +
+            '<div class="debug-box"><strong>🔍 تفاصيل:</strong>\n' + escapeHtml(err.stack || err.message || '') + '</div>';
+        } finally {
+          rSearchBtn.textContent = '🔍 بحث';
+          rSearchBtn.disabled = false;
+        }
+      }
+
+      function renderRoutes(data) {
+        var routes = data.routes || [];
+        var fastest = data.fastest;
+        if (!routes.length) {
+          rRoutesContainer.innerHTML = '<div class="empty-state"><div class="emoji">🛫</div><h3>لا توجد مسارات</h3><p>حاول تغيير عدد التوقفات أو المطارات</p></div>' +
+            '<div class="debug-box"><strong>📊 معلومات:</strong> مرشحين: ' + (data.candidates_found || 0) + ' | وقت: ' + (data.search_time_ms || '?') + ' ms</div>';
+          return;
+        }
+        var html = '<div class="routes-grid">';
+        routes.forEach(function(route, idx) {
+          var legs = route.legs || route.segments || route.steps || [];
+          var stops = Array.isArray(legs) ? Math.max(0, legs.length - 1) : 0;
+          var depIata = '???', arrIata = '???';
+          if (Array.isArray(legs) && legs.length) {
+            var first = legs[0], last = legs[legs.length - 1];
+            depIata = first?.from_airport || first?.from || first?.origin || '???';
+            arrIata = last?.to_airport || last?.to || last?.destination || '???';
+          }
+          var totalDistance = route.total_distance || route.distance || route.totalDistance || 0;
+          var totalPrice = route.total_price || route.price || route.totalPrice || 0;
+          var totalTime = route.total_time_minutes || route.time || route.duration || route.totalTime || 0;
+          totalDistance = typeof totalDistance === 'number' ? totalDistance : parseFloat(totalDistance) || 0;
+          totalPrice = typeof totalPrice === 'number' ? totalPrice : parseFloat(totalPrice) || 0;
+          totalTime = typeof totalTime === 'number' ? totalTime : parseFloat(totalTime) || 0;
+          var airlineNames = [];
+          if (Array.isArray(legs)) {
+            legs.forEach(function(leg) {
+              var names = leg.airline_names || leg.airlines || leg.carriers || [];
+              if (Array.isArray(names)) {
+                names.forEach(function(n) { if (n && !airlineNames.includes(n)) airlineNames.push(n); });
+              }
+            });
+          }
+          var airlinesStr = airlineNames.length ? airlineNames.join(' · ') : 'شركات متعددة';
+          var isFastest = false;
+          if (fastest) {
+            var rid = route.id || route.route_id || route.ID || idx;
+            var fid = fastest.id || fastest.route_id || fastest.ID;
+            if (rid && fid && rid === fid) isFastest = true;
+          }
+          var stopLabels = '';
+          if (stops > 0 && Array.isArray(legs)) {
+            var parts = legs.slice(0, -1).map(function(l) { return l.to_airport || l.to || l.destination || '?'; });
+            stopLabels = ' <span class="stop-badge">' + parts.join(' · ') + '</span>';
+          }
+          html +=
+            '<div class="route-card">' +
+            '<div class="route-info">' +
+            '<div class="route-airports">' +
+            '<span class="iata">' + escapeHtml(depIata) + '</span>' +
+            '<span class="arrow">→</span>' +
+            '<span class="iata">' + escapeHtml(arrIata) + '</span>' +
+            '</div>' +
+            '<div class="route-stops">🛑 ' + stops + ' توقف' + stopLabels + '</div>' +
+            '<div class="route-airlines"><span>✈️</span> ' + escapeHtml(airlinesStr) + '</div>' +
+            '</div>' +
+            '<div class="route-metrics">' +
+            (isFastest ? '<span class="fastest-badge">⚡ الأسرع</span>' : '') +
+            '<span class="metric"><span class="value">' + totalDistance.toFixed(0) + '</span><span class="unit">كم</span></span>' +
+            '<span class="metric"><span class="value">' + totalTime.toFixed(0) + '</span><span class="unit">دق</span></span>' +
+            '<span class="metric"><span class="value">$' + totalPrice.toFixed(0) + '</span><span class="unit">تقديري</span></span>' +
+            '</div>' +
+            '</div>';
+        });
+        html += '</div>';
+        html += '<div style="margin-top:20px;opacity:0.4;font-size:12px;color:var(--text-muted);border-top:1px solid rgba(255,255,255,0.05);padding-top:14px;">' +
+          '<details><summary style="cursor:pointer;">🔧 بيانات خام (للمطورين)</summary>' +
+          '<pre style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;overflow-x:auto;font-size:11px;margin-top:8px;max-height:300px;overflow-y:auto;">' +
+          escapeHtml(JSON.stringify(data, null, 2)) +
+          '</pre></details></div>';
+        rRoutesContainer.innerHTML = html;
+      }
+
+      // Init
+      rFromInput.value = 'دبي';
+      rToInput.value = 'لندن';
+      setTimeout(function() {
+        fetchIata(rFromInput.value.trim(), 'from');
+        setTimeout(function() { fetchIata(rToInput.value.trim(), 'to'); }, 400);
+      }, 500);
+      updateStepUI();
+
+    })();
+  </script>
+</body>
+</html>

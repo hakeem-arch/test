@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛩️ Flight Route Optimizer</title>
+    <style>
+        /* -------------------- CSS Reset & Base -------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: #0b0e1a;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* -------------------- Main Card -------------------- */
+        .app-container {
+            max-width: 1300px;
+            width: 100%;
+            background: linear-gradient(145deg, #131a2b, #0d1322);
+            border-radius: 48px;
+            padding: 40px 40px 50px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.1);
+            backdrop-filter: blur(2px);
+            transition: all 0.3s ease;
+        }
+
+        /* -------------------- Header -------------------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: radial-gradient(circle at 30% 30%, #f7d875, #c9a53b);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.25);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #f6e6b0, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text span {
+            font-weight: 300;
+            color: #8b9bb5;
+            -webkit-text-fill-color: #8b9bb5;
+        }
+
+        .badge {
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 40px;
+            padding: 8px 22px;
+            font-size: 14px;
+            color: #d4af37;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge .dot {
+            width: 10px;
+            height: 10px;
+            background: #4cd964;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 1.8s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
+
+        /* -------------------- Stats Bar -------------------- */
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px 35px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 60px;
+            padding: 14px 28px;
+            margin-bottom: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font-size: 15px;
+            color: #a0b3cf;
+        }
+
+        .stat-item strong {
+            color: #e8edf5;
+            font-weight: 600;
+            font-size: 18px;
+            margin-right: 2px;
+        }
+
+        .stat-item .label {
+            color: #6b7d9c;
+            font-weight: 300;
+            font-size: 14px;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* -------------------- Search Panel -------------------- */
+        .search-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 32px;
+            padding: 28px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 0.6fr 0.5fr;
+            gap: 18px;
+            align-items: end;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-group label {
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b9bb5;
+            margin-left: 4px;
+        }
+
+        .field-group input,
+        .field-group select {
+            background: #1a2338;
+            border: 1px solid #28324b;
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-size: 16px;
+            color: #e8edf5;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .field-group input::placeholder {
+            color: #4a5a78;
+            font-weight: 300;
+        }
+
+        .field-group input:focus,
+        .field-group select:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+            background: #1f2a42;
+        }
+
+        .field-group select option {
+            background: #1a2338;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #d4af37, #b8942b);
+            border: none;
+            border-radius: 16px;
+            padding: 14px 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #0b0e1a;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 16px rgba(212, 175, 55, 0.25);
+            height: 56px;
+            letter-spacing: 0.3px;
+            width: 100%;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.35);
+            background: linear-gradient(135deg, #e2c258, #c9a53b);
+        }
+
+        .btn-search:active {
+            transform: scale(0.97);
+        }
+
+        /* -------------------- Results Area -------------------- */
+        .results-area {
+            margin-top: 10px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .results-header h2 {
+            font-weight: 400;
+            font-size: 22px;
+            color: #cbd8ed;
+        }
+
+        .results-header h2 strong {
+            font-weight: 600;
+            color: #d4af37;
+        }
+
+        .results-meta {
+            font-size: 14px;
+            color: #7a8aa8;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* -------------------- Route Cards -------------------- */
+        .routes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .route-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            padding: 22px 28px;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(2px);
+        }
+
+        .route-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(212, 175, 55, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .route-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            flex: 2 1 300px;
+        }
+
+        .route-airports {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .route-airports .iata {
+            background: rgba(212, 175, 55, 0.08);
+            padding: 6px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            letter-spacing: 0.5px;
+            color: #d4af37;
+        }
+
+        .route-airports .arrow {
+            color: #4a5a78;
+            font-size: 22px;
+        }
+
+        .route-stops {
+            font-size: 15px;
+            color: #9aabcd;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .route-stops .stop-badge {
+            display: inline-block;
+            background: #2f3a57;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            margin-left: 4px;
+            color: #bcc9e0;
+        }
+
+        .route-metrics {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .metric {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            font-size: 15px;
+            color: #a0b3cf;
+        }
+
+        .metric .value {
+            font-weight: 700;
+            font-size: 18px;
+            color: #e8edf5;
+        }
+
+        .metric .unit {
+            font-size: 13px;
+            color: #6b7d9c;
+        }
+
+        .route-airlines {
+            font-size: 14px;
+            color: #8b9bb5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .airline-tag {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 2px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 13px;
+            color: #bcc9e0;
+        }
+
+        /* -------------------- Fastest Badge -------------------- */
+        .fastest-badge {
+            background: rgba(76, 217, 100, 0.12);
+            border: 1px solid rgba(76, 217, 100, 0.25);
+            color: #4cd964;
+            padding: 4px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* -------------------- Debug/Error -------------------- */
+        .debug-box {
+            background: rgba(255, 50, 50, 0.05);
+            border: 1px solid rgba(255, 50, 50, 0.15);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            color: #ff6b6b;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .debug-box strong {
+            color: #ff8a8a;
+        }
+
+        /* -------------------- Empty / Loading -------------------- */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5a6a88;
+        }
+
+        .empty-state .emoji {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-weight: 400;
+            font-size: 22px;
+            color: #8b9bb5;
+        }
+
+        .empty-state p {
+            color: #4a5a78;
+            margin-top: 8px;
+        }
+
+        /* -------------------- Responsive -------------------- */
+        @media (max-width: 1000px) {
+            .search-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .app-container {
+                padding: 28px 20px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-bar {
+                flex-direction: column;
+                gap: 6px;
+                border-radius: 28px;
+                padding: 18px 22px;
+            }
+            .stat-divider {
+                display: none;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .route-card {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .route-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .route-metrics {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .logo-text {
+                font-size: 22px;
+            }
+        }
+
+        /* -------------------- Scrollbar (optional) -------------------- */
+        ::-webkit-scrollbar {
+            width: 6px;
+            background: #0b0e1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2f3a57;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a5a78;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo-area">
+            <div class="logo-icon">✈️</div>
+            <div class="logo-text">Route<span>Optimizer</span></div>
+        </div>
+        <div class="badge">
+            <span class="dot"></span>
+            <span id="statusText">جاهز</span>
+        </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+            <strong id="statAirports">—</strong>
+            <span class="label">مطار</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <strong id="statRoutes">—</strong>
+            <span class="label">مسار</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <strong id="statAirlines">—</strong>
+            <span class="label">شركة طيران</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span id="statBuildTime" style="color:#7a8aa8;">⏱️ <span id="buildTimeValue">—</span> ms</span>
+        </div>
+    </div>
+
+    <!-- SEARCH PANEL -->
+    <div class="search-panel">
+        <div class="search-grid">
+            <div class="field-group">
+                <label>✈️ من</label>
+                <input type="text" id="fromInput" placeholder="DXB" maxlength="3" value="DXB">
+            </div>
+            <div class="field-group">
+                <label>📍 إلى</label>
+                <input type="text" id="toInput" placeholder="LHR" maxlength="3" value="LHR">
+            </div>
+            <div class="field-group">
+                <label>⚙️ التفضيل</label>
+                <select id="prefSelect">
+                    <option value="balanced">متوازن</option>
+                    <option value="fastest">الأسرع</option>
+                    <option value="shortest">أقل مسافة</option>
+                    <option value="cheapest">الأرخص</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>🔄 التوقف</label>
+                <select id="stopsSelect">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            <div class="field-group" style="justify-content: flex-end;">
+                <button class="btn-search" id="searchBtn">🔍 بحث</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-area">
+        <div class="results-header">
+            <h2>🛬 <strong>أفضل المسارات</strong></h2>
+            <span class="results-meta" id="resultsMeta">0 مسار</span>
+        </div>
+
+        <div id="routesContainer">
+            <!-- سيتم حقن البطاقات هنا ديناميكياً -->
+            <div class="empty-state">
+                <div class="emoji">🗺️</div>
+                <h3>ابحث عن مسار</h3>
+                <p>أدخل مطار المغادرة والوصول واضغط بحث</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- References ----------
+    const fromInput = document.getElementById('fromInput');
+    const toInput = document.getElementById('toInput');
+    const prefSelect = document.getElementById('prefSelect');
+    const stopsSelect = document.getElementById('stopsSelect');
+    const searchBtn = document.getElementById('searchBtn');
+    const routesContainer = document.getElementById('routesContainer');
+    const resultsMeta = document.getElementById('resultsMeta');
+    const statusText = document.getElementById('statusText');
+
+    // Stats
+    const statAirports = document.getElementById('statAirports');
+    const statRoutes = document.getElementById('statRoutes');
+    const statAirlines = document.getElementById('statAirlines');
+    const buildTimeValue = document.getElementById('buildTimeValue');
+
+    // API Base (افتراضي يعمل على localhost:8000, قابل للتعديل)
+    const API_BASE = window.location.origin.includes('vercel') ? '' : 'http://localhost:8000';
+
+    // ---------- Helper: fetch JSON ----------
+    async function fetchJSON(endpoint) {
+        const res = await fetch(`${API_BASE}${endpoint}`);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`[${res.status}] ${text}`);
+        }
+        return res.json();
+    }
+
+    // ---------- Load stats ----------
+    async function loadStats() {
+        try {
+            const data = await fetchJSON('/stats');
+            statAirports.textContent = data.airports_in_graph ?? '—';
+            statRoutes.textContent = data.total_flight_edges ?? '—';
+            statAirlines.textContent = data.airlines_known ?? '—';
+            buildTimeValue.textContent = data.build_time_ms ?? '—';
+            statusText.textContent = 'متصل';
+        } catch (err) {
+            console.warn('Stats load error:', err);
+            statusText.textContent = '⚠️ غير متصل';
+        }
+    }
+
+    // ---------- Perform search ----------
+    async function performSearch() {
+        const from = fromInput.value.trim().toUpperCase() || 'DXB';
+        const to = toInput.value.trim().toUpperCase() || 'LHR';
+        const preference = prefSelect.value;
+        const maxStops = parseInt(stopsSelect.value, 10);
+
+        // UI feedback
+        searchBtn.textContent = '⏳ جارٍ البحث...';
+        searchBtn.disabled = true;
+        routesContainer.innerHTML = `
+            <div class="empty-state">
+                <div class="emoji">⏳</div>
+                <h3>جارٍ البحث عن المسارات...</h3>
+            </div>
+        `;
+
+        try {
+            const params = new URLSearchParams({
+                from,
+                to,
+                preference,
+                max_stops: maxStops,
+                top_k: 10,
+            });
+            const data = await fetchJSON(`/search?${params.toString()}`);
+
+            // عرض البيانات الخام للتصحيح (لن يظهر للمستخدم النهائي)
+            console.log('📦 البيانات القادمة من API:', data);
+
+            // تحديث الميتا
+            resultsMeta.textContent = `${data.routes?.length ?? 0} مسار`;
+
+            // عرض المسارات
+            renderRoutes(data);
+        } catch (err) {
+            console.error('❌ خطأ في البحث:', err);
+            routesContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="emoji">⚠️</div>
+                    <h3>حدث خطأ</h3>
+                    <p>${err.message || 'تعذر الاتصال بالخادم'}</p>
+                </div>
+                <div class="debug-box">
+                    <strong>🔍 تفاصيل الخطأ:</strong>\n${err.stack || err.message || 'لا توجد تفاصيل إضافية'}
+                </div>
+            `;
+        } finally {
+            searchBtn.textContent = '🔍 بحث';
+            searchBtn.disabled = false;
+        }
+    }
+
+    // ---------- Render route cards (محسّن للتعامل مع البيانات المختلفة) ----------
+    function renderRoutes(data) {
+        const routes = data.routes || [];
+        const fastest = data.fastest;
+
+        if (!routes.length) {
+            routesContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="emoji">🛫</div>
+                    <h3>لا توجد مسارات</h3>
+                    <p>حاول تغيير عدد التوقفات أو المطارات</p>
+                </div>
+                <div class="debug-box">
+                    <strong>📊 معلومات الـ API:</strong>
+                    تم العثور على ${data.candidates_found || 0} مرشح\n
+                    وقت البحث: ${data.search_time_ms || '?'} ms
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="routes-grid">';
+
+        routes.forEach((route, index) => {
+            // محاولة استخراج البيانات بأكثر من طريقة (للتوافق مع تنسيقات مختلفة)
+            const legs = route.legs || route.segments || route.steps || [];
+            
+            // حساب عدد التوقفات
+            const stops = Array.isArray(legs) ? Math.max(0, legs.length - 1) : 0;
+            
+            // استخراج المطارات
+            let depIata = '???';
+            let arrIata = '???';
+            
+            if (Array.isArray(legs) && legs.length > 0) {
+                // محاولة استخراج من أول وآخر رحلة
+                const firstLeg = legs[0];
+                const lastLeg = legs[legs.length - 1];
+                
+                depIata = firstLeg?.from_airport || firstLeg?.from || firstLeg?.origin || '???';
+                arrIata = lastLeg?.to_airport || lastLeg?.to || lastLeg?.destination || '???';
+            }
+            
+            // استخراج المسافات والأسعار والأوقات
+            let totalDistance = route.total_distance || route.distance || route.totalDistance || 0;
+            let totalPrice = route.total_price || route.price || route.totalPrice || 0;
+            let totalTime = route.total_time_minutes || route.time || route.duration || route.totalTime || 0;
+            
+            // التأكد من أن القيم أرقام
+            totalDistance = typeof totalDistance === 'number' ? totalDistance : parseFloat(totalDistance) || 0;
+            totalPrice = typeof totalPrice === 'number' ? totalPrice : parseFloat(totalPrice) || 0;
+            totalTime = typeof totalTime === 'number' ? totalTime : parseFloat(totalTime) || 0;
+            
+            // استخراج أسماء شركات الطيران
+            const airlineNames = [];
+            if (Array.isArray(legs)) {
+                legs.forEach(leg => {
+                    // محاولة استخراج بأسماء مختلفة
+                    const names = leg.airline_names || leg.airlines || leg.carriers || [];
+                    if (Array.isArray(names)) {
+                        names.forEach(name => {
+                            if (name && !airlineNames.includes(name)) {
+                                airlineNames.push(name);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            const airlinesStr = airlineNames.length ? airlineNames.join(' · ') : 'شركات متعددة';
+            
+            // هل هذا المسار هو الأسرع؟
+            let isFastest = false;
+            if (fastest) {
+                // محاولة مقارنة المعرفات
+                const routeId = route.id || route.route_id || route.ID || index;
+                const fastestId = fastest.id || fastest.route_id || fastest.ID;
+                if (routeId && fastestId && routeId === fastestId) {
+                    isFastest = true;
+                }
+            }
+            
+            // بناء البطاقة
+            html += `
+                <div class="route-card">
+                    <div class="route-info">
+                        <div class="route-airports">
+                            <span class="iata">${depIata}</span>
+                            <span class="arrow">→</span>
+                            <span class="iata">${arrIata}</span>
+                        </div>
+                        <div class="route-stops">
+                            🛑 ${stops} توقف
+                            ${stops > 0 && Array.isArray(legs) ? 
+                                `<span class="stop-badge">${legs.slice(0, -1).map(l => l.to_airport || l.to || l.destination || '?').join(' · ')}</span>` 
+                                : ''}
+                        </div>
+                        <div class="route-airlines">
+                            <span>✈️</span>
+                            ${airlinesStr}
+                        </div>
+                    </div>
+                    <div class="route-metrics">
+                        ${isFastest ? `<span class="fastest-badge">⚡ الأسرع</span>` : ''}
+                        <span class="metric">
+                            <span class="value">${totalDistance.toFixed(0)}</span>
+                            <span class="unit">كم</span>
+                        </span>
+                        <span class="metric">
+                            <span class="value">${totalTime.toFixed(0)}</span>
+                            <span class="unit">دق</span>
+                        </span>
+                        <span class="metric">
+                            <span class="value">$${totalPrice.toFixed(0)}</span>
+                            <span class="unit">تقديري</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        
+        // إضافة معلومات تصحيح إضافية (مخفية عن المستخدم العادي)
+        html += `
+            <div style="margin-top: 20px; opacity: 0.5; font-size: 12px; color: #4a5a78; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <details>
+                    <summary style="cursor: pointer;">🔧 بيانات خام (للمطورين)</summary>
+                    <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 11px; margin-top: 8px; max-height: 300px; overflow-y: auto;">${JSON.stringify(data, null, 2)}</pre>
+                </details>
+            </div>
+        `;
+        
+        routesContainer.innerHTML = html;
+    }
+
+    // ---------- Auto-search on load? ----------
+    async function init() {
+        await loadStats();
+        // تنفيذ بحث افتراضي عند تحميل الصفحة
+        await performSearch();
+    }
+
+    // ---------- Event listeners ----------
+    searchBtn.addEventListener('click', performSearch);
+
+    // Enter key على حقول الإدخال
+    fromInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
+    toInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
+
+    // تحويل تلقائي إلى uppercase
+    fromInput.addEventListener('input', () => { fromInput.value = fromInput.value.toUpperCase(); });
+    toInput.addEventListener('input', () => { toInput.value = toInput.value.toUpperCase(); });
+
+    // بدء التشغيل
+    init();
+</script>
+
+</body>
+</html>

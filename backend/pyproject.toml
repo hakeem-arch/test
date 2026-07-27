@@ -1,0 +1,9 @@
+[project]
+name = "flight-route-backend"
+version = "0.1.0"
+description = "Flight Route Optimization - FastAPI backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "pandas>=2.2.0",
+]

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛫 بحث المطارات</title>
+  <style>
+    /* ============================================================
+       الأنماط الكاملة لصفحة بحث المطارات (مأخوذة من api-tester)
+       ============================================================ */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg-primary: #0b0e1a;
+      --bg-surface: #131a2b;
+      --bg-surface-2: #1a2338;
+      --bg-surface-3: #263447;
+      --border-color: #28324b;
+      --text-primary: #e8edf5;
+      --text-secondary: #a0b3cf;
+      --text-muted: #6b7d9c;
+      --gold: #d4af37;
+      --gold-dark: #b8942b;
+      --gold-glow: rgba(212,175,55,0.25);
+      --success: #4cd964;
+      --danger: #ff6b6b;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.5);
+      --transition: all 0.25s ease;
+    }
+    body { font-family: 'Segoe UI',system-ui,sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; padding:16px; }
+    .app-shell { max-width:1300px; margin:0 auto; background:linear-gradient(145deg,var(--bg-surface),#0d1322); border-radius:48px; padding:28px 32px 40px; box-shadow:0 30px 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,215,0,0.06); min-height:90vh; }
+    .navbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:30px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .navbar .brand { display:flex; align-items:center; gap:12px; }
+    .navbar .brand .icon { width:44px; height:44px; background:radial-gradient(circle at 30% 30%,#f7d875,var(--gold-dark)); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 6px 16px var(--gold-glow); }
+    .navbar .brand .name { font-size:24px; font-weight:700; background:linear-gradient(135deg,#f6e6b0,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .navbar .brand .name span { font-weight:300; -webkit-text-fill-color:var(--text-secondary); color:var(--text-secondary); }
+    .nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+    .nav-links .nav-btn { padding:8px 22px; border-radius:40px; font-size:15px; font-weight:500; background:transparent; color:var(--text-secondary); border:1px solid transparent; transition:var(--transition); text-decoration:none; display:inline-block; }
+    .nav-links .nav-btn:hover { color:var(--text-primary); background:rgba(255,255,255,0.04); }
+    .nav-links .nav-btn.active { background:rgba(212,175,55,0.12); border-color:rgba(212,175,55,0.3); color:var(--gold); }
+
+    /* أنماط صفحة بحث المطارات */
+    .airport-search-wrap .url-bar { display:flex; gap:8px; margin-bottom:18px; }
+    .airport-search-wrap .url-bar input { flex:1; direction:ltr; text-align:left; background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); padding:10px 14px; font-size:0.9rem; font-family:monospace; }
+    .airport-search-wrap .url-bar input:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-glow); }
+    .airport-search-wrap .health { display:inline-flex; align-items:center; gap:8px; background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:999px; padding:6px 16px; font-size:0.85rem; color:var(--text-muted); }
+    .airport-search-wrap .health .dot { width:10px; height:10px; border-radius:50%; background:var(--text-muted); }
+    .airport-search-wrap .health.online .dot { background:var(--success); }
+    .airport-search-wrap .health.offline .dot { background:var(--danger); }
+    .airport-search-wrap .health.online { color:var(--success); border-color:var(--success); }
+    .airport-search-wrap .health.offline { color:var(--danger); border-color:var(--danger); }
+    .airport-search-wrap .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .airport-search-wrap .tabs .tab { background:var(--bg-surface-2); border:1px solid var(--border-color); color:var(--text-muted); border-radius:999px; padding:7px 18px; font-size:0.9rem; transition:var(--transition); cursor:pointer; }
+    .airport-search-wrap .tabs .tab:hover { border-color:var(--gold); color:var(--text-primary); }
+    .airport-search-wrap .tabs .tab.active { background:var(--gold); border-color:var(--gold); color:#0b0e1a; font-weight:600; }
+    .airport-search-wrap .search-box { position:relative; display:flex; gap:8px; margin-bottom:6px; }
+    .airport-search-wrap .search-box input { flex:1; background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); padding:14px 16px; font-size:1.05rem; }
+    .airport-search-wrap .search-box input:focus { border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-glow); }
+    .airport-search-wrap .search-box input::placeholder { color:var(--text-muted); }
+    .airport-search-wrap .search-box button { background:var(--gold); border:none; color:#0b0e1a; border-radius:var(--radius-sm); padding:0 28px; font-size:1rem; font-weight:600; transition:var(--transition); cursor:pointer; }
+    .airport-search-wrap .search-box button:hover { background:var(--gold-dark); transform:scale(1.02); }
+    .airport-search-wrap .search-box button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .airport-search-wrap .suggestions { position:absolute; top:calc(100% + 6px); right:0; left:108px; background:var(--bg-surface-3); border:1px solid var(--border-color); border-radius:var(--radius-sm); z-index:20; max-height:260px; overflow-y:auto; display:none; box-shadow:0 12px 32px rgba(0,0,0,0.6); }
+    .airport-search-wrap .suggestions.open { display:block; }
+    .airport-search-wrap .suggestions div { padding:10px 16px; cursor:pointer; border-bottom:1px solid var(--border-color); font-size:0.92rem; transition:var(--transition); }
+    .airport-search-wrap .suggestions div:last-child { border-bottom:none; }
+    .airport-search-wrap .suggestions div:hover { background:var(--bg-surface-2); color:var(--gold); }
+    .airport-search-wrap .hint { color:var(--text-muted); font-size:0.82rem; margin-bottom:18px; }
+    .airport-search-wrap .meta { display:none; align-items:center; gap:16px; flex-wrap:wrap; color:var(--text-muted); font-size:0.85rem; margin-bottom:14px; }
+    .airport-search-wrap .meta.visible { display:flex; }
+    .airport-search-wrap .meta code { background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:6px; padding:2px 10px; direction:ltr; font-size:0.8rem; }
+    .airport-search-wrap .results { display:flex; flex-direction:column; gap:12px; }
+    .airport-search-wrap .result-card { background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:16px 18px; display:flex; flex-direction:column; gap:8px; transition:var(--transition); }
+    .airport-search-wrap .result-card:hover { border-color:rgba(212,175,55,0.25); }
+    .airport-search-wrap .result-card .top { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+    .airport-search-wrap .result-card .top h3 { font-size:1.05rem; color:var(--text-primary); }
+    .airport-search-wrap .result-card .top .name-en { color:var(--text-muted); font-size:0.85rem; direction:ltr; text-align:right; }
+    .airport-search-wrap .result-card .codes { display:flex; gap:6px; }
+    .airport-search-wrap .result-card .badge { background:var(--gold); color:#0b0e1a; border-radius:6px; padding:2px 12px; font-size:0.8rem; font-weight:700; font-family:monospace; letter-spacing:1px; }
+    .airport-search-wrap .result-card .badge.icao { background:var(--bg-surface-3); color:var(--text-muted); border:1px solid var(--border-color); }
+    .airport-search-wrap .result-card .info { display:flex; gap:18px; flex-wrap:wrap; color:var(--text-muted); font-size:0.88rem; }
+    .airport-search-wrap .result-card .info span { display:flex; align-items:center; gap:6px; }
+    .airport-search-wrap .result-card .score { color:var(--success); font-size:0.8rem; font-family:monospace; }
+    .airport-search-wrap .state { text-align:center; color:var(--text-muted); padding:40px 16px; display:none; }
+    .airport-search-wrap .state.visible { display:block; }
+    .airport-search-wrap .state.error { color:var(--danger); }
+    .airport-search-wrap .spinner { width:32px; height:32px; border:3px solid var(--border-color); border-top-color:var(--gold); border-radius:50%; margin:0 auto 12px; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .airport-search-wrap details { margin-top:20px; background:var(--bg-surface-2); border:1px solid var(--border-color); border-radius:var(--radius-sm); }
+    .airport-search-wrap details summary { cursor:pointer; padding:12px 16px; color:var(--text-muted); font-size:0.9rem; user-select:none; }
+    .airport-search-wrap details pre { direction:ltr; text-align:left; padding:16px; overflow-x:auto; font-size:0.78rem; color:#7dd3fc; border-top:1px solid var(--border-color); max-height:400px; overflow-y:auto; }
+    @media (max-width:760px) { .navbar { flex-direction:column; align-items:stretch; } .nav-links { justify-content:center; } .airport-search-wrap .search-box { flex-direction:column; } .airport-search-wrap .search-box button { padding:12px; } .airport-search-wrap .suggestions { left:0; } .app-shell { border-radius:28px; padding:16px 12px 24px; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="navbar">
+      <div class="brand">
+        <div class="icon">✈️</div>
+        <div class="name">Route<span>Optimizer</span></div>
+      </div>
+      <div class="nav-links">
+        <a class="nav-btn" href="index.html">🏠 الرئيسية</a>
+        <a class="nav-btn active" href="airport.html">🛫 بحث المطارات</a>
+        <a class="nav-btn" href="route.html">🛬 المسارات</a>
+      </div>
+    </nav>
+
+    <div class="airport-search-wrap">
+      <!-- Health + API base -->
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;align-items:center;">
+        <div class="health" id="airHealth">
+          <span class="dot"></span>
+          <span id="airHealthText">جارٍ الفحص…</span>
+        </div>
+        <div class="url-bar" style="flex:1;min-width:200px;margin-bottom:0;">
+          <input type="text" id="airApiBase" value="http://100.102.254.2:8000" aria-label="عنوان السيرفر" />
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="airTabs">
+        <button class="tab active" data-endpoint="search-smart">🔍 بحث ذكي</button>
+        <button class="tab" data-endpoint="search-code">🆔 كود IATA/ICAO</button>
+        <button class="tab" data-endpoint="search-airport">🏛️ اسم المطار</button>
+        <button class="tab" data-endpoint="search-city">🏙️ المدينة</button>
+        <button class="tab" data-endpoint="search-country">🗺️ الدولة</button>
+      </div>
+
+      <!-- Search box -->
+      <div class="search-box">
+        <input type="text" id="airQuery" placeholder="اكتب هنا… مثال: دبي أو DXB أو Paris" autocomplete="off" />
+        <button id="airSearchBtn">بحث</button>
+        <div class="suggestions" id="airSuggestions"></div>
+      </div>
+      <p class="hint">💡 الاقتراحات تظهر تلقائياً أثناء الكتابة — يدعم العربية والإنجليزية مع تصحيح إملائي</p>
+
+      <!-- Meta -->
+      <div class="meta" id="airMeta">
+        <span id="airMetaCount"></span>
+        <span id="airMetaTime"></span>
+        <code id="airMetaUrl"></code>
+      </div>
+
+      <!-- States -->
+      <div class="state" id="airLoading"><div class="spinner"></div>جارٍ البحث…</div>
+      <div class="state error" id="airError"></div>
+      <div class="state" id="airEmpty">لا توجد نتائج مطابقة</div>
+
+      <!-- Results -->
+      <div class="results" id="airResults"></div>
+
+      <!-- Raw JSON -->
+      <details id="airRawWrap" style="display:none;">
+        <summary>📄 عرض استجابة JSON الخام</summary>
+        <pre id="airRawJson"></pre>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+      // ---------- UTILITY ----------
+      function $(id) { return document.getElementById(id); }
+      function qsa(sel, ctx) { return (ctx || document).querySelectorAll(sel); }
+      function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function(c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
+      function pick(obj, keys) { for(var i=0;i<keys.length;i++){ var v=obj[keys[i]]; if(v!==undefined && v!==null && v!=='') return v; } return ''; }
+
+      var airApiBase = $('airApiBase');
+      var airQuery = $('airQuery');
+      var airSearchBtn = $('airSearchBtn');
+      var airResults = $('airResults');
+      var airSuggestions = $('airSuggestions');
+      var airMeta = $('airMeta');
+      var airMetaCount = $('airMetaCount');
+      var airMetaTime = $('airMetaTime');
+      var airMetaUrl = $('airMetaUrl');
+      var airLoading = $('airLoading');
+      var airError = $('airError');
+      var airEmpty = $('airEmpty');
+      var airRawWrap = $('airRawWrap');
+      var airRawJson = $('airRawJson');
+      var airHealth = $('airHealth');
+      var airHealthText = $('airHealthText');
+      var airTabs = $('airTabs');
+
+      var airEndpoint = 'search-smart';
+      var suggestTimer = null;
+      var suggestAbort = null;
+      var PARAM_NAMES = { 'search-code':'code', 'search-city':'city', 'search-country':'country' };
+
+      function airBase() { return airApiBase.value.trim().replace(/\/+$/,''); }
+      function airParamName() { return PARAM_NAMES[airEndpoint] || 'query'; }
+
+      // Health
+      async function checkAirHealth() {
+        try {
+          var r = await fetch(airBase() + '/api/v1/health', { signal: AbortSignal.timeout(4000) });
+          if (!r.ok) throw new Error();
+          airHealth.className = 'health online';
+          airHealthText.textContent = '✅ السيرفر متصل';
+        } catch (_) {
+          airHealth.className = 'health offline';
+          airHealthText.textContent = '❌ غير متصل';
+        }
+      }
+      checkAirHealth();
+      setInterval(checkAirHealth, 15000);
+      airApiBase.addEventListener('change', checkAirHealth);
+
+      // Tabs
+      airTabs.addEventListener('click', function(e) {
+        var btn = e.target.closest('.tab');
+        if (!btn) return;
+        qsa('.tab', airTabs).forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        airEndpoint = btn.dataset.endpoint;
+        airQuery.focus();
+      });
+
+      // Suggestions
+      airQuery.addEventListener('input', function() {
+        clearTimeout(suggestTimer);
+        var q = airQuery.value.trim();
+        if (q.length < 2) { closeAirSuggestions(); return; }
+        suggestTimer = setTimeout(fetchAirSuggestions, 250);
+      });
+
+      async function fetchAirSuggestions() {
+        var q = airQuery.value.trim();
+        if (!q) return;
+        if (suggestAbort) suggestAbort.abort();
+        suggestAbort = new AbortController();
+        try {
+          var r = await fetch(airBase() + '/api/v1/suggest?query=' + encodeURIComponent(q), { signal: suggestAbort.signal });
+          var data = await r.json();
+          var list = data.suggestions || data.results || data || [];
+          renderAirSuggestions(Array.isArray(list) ? list : []);
+        } catch (_) { /* ignore */ }
+      }
+
+      function renderAirSuggestions(list) {
+        if (!list.length) { closeAirSuggestions(); return; }
+        airSuggestions.innerHTML = '';
+        list.slice(0, 8).forEach(function(s) {
+          var text = typeof s === 'string' ? s : (s.label || s.text || s.name_ar || s.name || JSON.stringify(s));
+          var div = document.createElement('div');
+          div.textContent = text;
+          div.addEventListener('click', function() {
+            airQuery.value = typeof s === 'string' ? s : (s.value || text);
+            closeAirSuggestions();
+            doAirSearch();
+          });
+          airSuggestions.appendChild(div);
+        });
+        airSuggestions.classList.add('open');
+      }
+
+      function closeAirSuggestions() { airSuggestions.classList.remove('open'); }
+      document.addEventListener('click', function(e) { if (!e.target.closest('.airport-search-wrap .search-box')) closeAirSuggestions(); });
+
+      // Search
+      airSearchBtn.addEventListener('click', doAirSearch);
+      airQuery.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.nativeEvent?.isComposing) doAirSearch(); });
+
+      function setAirState(opt) {
+        opt = opt || {};
+        airLoading.classList.toggle('visible', !!opt.loading);
+        airError.classList.toggle('visible', !!opt.error);
+        airError.textContent = opt.error || '';
+        airEmpty.classList.toggle('visible', !!opt.empty);
+      }
+
+      async function doAirSearch() {
+        var q = airQuery.value.trim();
+        if (!q) return;
+        clearTimeout(suggestTimer);
+        if (suggestAbort) suggestAbort.abort();
+        closeAirSuggestions();
+        airResults.innerHTML = '';
+        airMeta.classList.remove('visible');
+        airRawWrap.style.display = 'none';
+        setAirState({ loading: true });
+        airSearchBtn.disabled = true;
+
+        var url = airBase() + '/api/v1/' + airEndpoint + '?' + airParamName() + '=' + encodeURIComponent(q);
+        var t0 = performance.now();
+
+        try {
+          var r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+          var data = await r.json();
+          var ms = Math.round(performance.now() - t0);
+
+          if (!r.ok) {
+            setAirState({ error: 'خطأ من السيرفر (' + r.status + '): ' + (data.detail ? JSON.stringify(data.detail) : '') });
+            return;
+          }
+
+          var items = flattenAirports(data);
+
+          airRawJson.textContent = JSON.stringify(data, null, 2);
+          airRawWrap.style.display = 'block';
+
+          airMetaCount.textContent = 'عدد النتائج: ' + items.length;
+          airMetaTime.textContent = 'زمن الاستجابة: ' + ms + 'ms';
+          airMetaUrl.textContent = url;
+          airMeta.classList.add('visible');
+
+          if (!items.length) { setAirState({ empty: true }); return; }
+          setAirState({});
+          renderAirResults(items);
+        } catch (err) {
+          setAirState({ error: 'تعذر الاتصال بالسيرفر — تأكد من تشغيل الخادم (' + err.message + ')' });
+        } finally {
+          airSearchBtn.disabled = false;
+          airLoading.classList.remove('visible');
+        }
+      }
+
+      function flattenAirports(data) {
+        var d = data.data || data.results || data;
+        if (Array.isArray(d)) return d;
+        if (!d || typeof d !== 'object') return [];
+        var out = [];
+        var ctx = { city: d.city, city_ar: d.city_ar, country: d.country, country_ar: d.country_ar };
+        if (Array.isArray(d.airports)) {
+          d.airports.forEach(function(a) { out.push(Object.assign({}, ctx, a)); });
+        }
+        if (Array.isArray(d.cities)) {
+          d.cities.forEach(function(c) {
+            (c.airports || []).forEach(function(a) {
+              out.push(Object.assign({}, { country: d.country, country_ar: d.country_ar, city: c.city, city_ar: c.city_ar }, a));
+            });
+          });
+        }
+        return out;
+      }
+
+      function renderAirResults(items) {
+        var frag = document.createDocumentFragment();
+        items.forEach(function(a) {
+          var nameAr = pick(a, ['airport_name_ar', 'name_ar']);
+          var nameEn = pick(a, ['airport_name', 'name_en', 'name']);
+          var cityAr = pick(a, ['city_ar']);
+          var cityEn = pick(a, ['city', 'city_en']);
+          var countryAr = pick(a, ['country_ar']);
+          var countryEn = pick(a, ['country', 'country_en']);
+          var iata = pick(a, ['iata', 'iata_code', 'code']);
+          var icao = pick(a, ['icao', 'icao_code']);
+          var score = pick(a, ['score', 'match_score', 'similarity']);
+
+          var card = document.createElement('article');
+          card.className = 'result-card';
+          card.innerHTML =
+            '<div class="top">' +
+            '<div><h3>' + escapeHtml(nameAr || nameEn || 'مطار غير معروف') +
+            (nameAr && nameEn ? '<div class="name-en">' + escapeHtml(nameEn) + '</div>' : '') +
+            '</div>' +
+            '<div class="codes">' +
+            (iata ? '<span class="badge">' + escapeHtml(iata) + '</span>' : '') +
+            (icao ? '<span class="badge icao">' + escapeHtml(icao) + '</span>' : '') +
+            '</div></div>' +
+            '<div class="info">' +
+            (cityAr || cityEn ? '<span>🏙️ ' + escapeHtml(cityAr || cityEn) + (cityAr && cityEn ? ' (' + escapeHtml(cityEn) + ')' : '') + '</span>' : '') +
+            (countryAr || countryEn ? '<span>🗺️ ' + escapeHtml(countryAr || countryEn) + (countryAr && countryEn ? ' (' + escapeHtml(countryEn) + ')' : '') + '</span>' : '') +
+            (score !== '' ? '<span class="score">📊 score: ' + escapeHtml(String(score)) + '</span>' : '') +
+            '</div>';
+          frag.appendChild(card);
+        });
+        airResults.appendChild(frag);
+      }
+
+      // Auto-search on load with default query
+      setTimeout(function() { airQuery.value = 'DXB'; doAirSearch(); }, 300);
+    })();
+  </script>
+</body>
+</html>
