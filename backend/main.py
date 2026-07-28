@@ -27,8 +27,8 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from flight_graph import FlightGraph, build_graph
-from route_engine import find_all_paths, find_fastest_path, rank_routes
+from backend.flight_graph import FlightGraph, build_graph
+from backend.route_engine import find_all_paths, find_fastest_path, rank_routes
 from route_engine.scoring import PRESETS
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
