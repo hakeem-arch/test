@@ -6,6 +6,9 @@ Module 3 - Route Models
 RouteLeg  = جزء واحد من الرحلة (مطار -> مطار بشركة معينة)
 RoutePath = مسار كامل من نقطة الانطلاق إلى الوجهة (قد يكون عدة أجزاء)
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dataclasses import dataclass, field
 from typing import List
