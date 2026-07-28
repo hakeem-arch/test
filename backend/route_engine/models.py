@@ -51,7 +51,7 @@ class RoutePath:
     @property
     def total_duration_min(self) -> int:
         """مدة الطيران + عقوبة الترانزيت لكل توقف."""
-        from flight_graph.geo import TRANSIT_PENALTY_MIN
+        from backend.flight_graph.geo import TRANSIT_PENALTY_MIN
 
         flight_time = sum(leg.duration_min for leg in self.legs)
         transit_time = self.stops * TRANSIT_PENALTY_MIN
