@@ -12,7 +12,7 @@ Module 3 - Route Engine
 
 from typing import List
 
-from flight_graph import FlightGraph
+from ..flight_graph import FlightGraph
 
 from .finder import find_all_paths, find_fastest_path
 from .models import RouteLeg, RoutePath
