@@ -20,8 +20,8 @@ import heapq
 from collections import deque
 from typing import Dict, List, Optional, Tuple
 
-from flight_graph import FlightGraph
-from flight_graph.geo import TRANSIT_PENALTY_MIN
+from ..flight_graph import FlightGraph
+from ..flight_graph.geo import TRANSIT_PENALTY_MIN
 
 from .models import RouteLeg, RoutePath
 
